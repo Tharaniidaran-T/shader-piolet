@@ -959,6 +959,7 @@ const SettingsPanel: React.FC = () => {
     } = useAppContext();
 
     const [isJsonCopied, setIsJsonCopied] = useState(false);
+    const [localApiKey, setLocalApiKey] = useState(() => localStorage.getItem('GEMINI_API_KEY') || '');
 
     const handleCopyJson = () => {
         navigator.clipboard.writeText(getSessionStateJson()).then(() => {
@@ -969,8 +970,37 @@ const SettingsPanel: React.FC = () => {
         });
     };
 
+    const handleApiKeyChange = (val: string) => {
+        setLocalApiKey(val);
+        if (val.trim()) {
+            localStorage.setItem('GEMINI_API_KEY', val.trim());
+        } else {
+            localStorage.removeItem('GEMINI_API_KEY');
+        }
+    };
+
     return (
         <div className="space-y-6">
+             {/* Gemini API Key Group */}
+             <div className="space-y-4">
+                 <h3 className="text-sm font-semibold text-gray-400 px-1">Gemini AI Settings</h3>
+                 <div>
+                     <label htmlFor="gemini-api-key" className="block text-xs text-gray-400 mb-1 ml-1 font-mono">
+                         Custom Gemini API Key
+                     </label>
+                     <input
+                         id="gemini-api-key"
+                         type="password"
+                         value={localApiKey}
+                         onChange={(e) => handleApiKeyChange(e.target.value)}
+                         placeholder="Enter your API key (stored locally)..."
+                         className="w-full p-2 bg-gray-900/80 border border-gray-600 rounded-md text-sm text-cyan-400 focus:ring-2 focus:ring-cyan-500 outline-none font-mono"
+                     />
+                     <p className="text-[11px] text-gray-400 mt-1 px-1 leading-relaxed">
+                         Deploying this on GitHub Pages? Enter your personal Google Gemini API key to activate AI-driven shader modulations and automatic refactoring. Your key is stored securely inside your browser's local storage and is never transmitted elsewhere.
+                     </p>
+                 </div>
+             </div>
              {/* Display Settings Group */}
             <div className="space-y-4">
                 <h3 className="text-sm font-semibold text-gray-400 px-1">Display</h3>
@@ -1308,9 +1338,9 @@ export const ControlsPanel: React.FC = () => {
                     <TabButton label="Terraform" isActive={activeTab === 'terraform'} onClick={() => setActiveTab('terraform')} />
                     {cameraControlsEnabled && <TabButton label="Collision" isActive={activeTab === 'collision'} onClick={() => setActiveTab('collision')} />}
                     {cameraControlsEnabled && <TabButton label="Controls" isActive={activeTab === 'controls'} onClick={() => setActiveTab('controls')} />}
-                    <TabButton label="System" isActive={activeTab === 'settings'} onClick={() => setActiveTab('settings')} />
                 </>
             )}
+            <TabButton label="System" isActive={activeTab === 'settings'} onClick={() => setActiveTab('settings')} />
         </div>
 
         {/* Content */}

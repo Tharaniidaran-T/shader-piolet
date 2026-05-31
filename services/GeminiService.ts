@@ -8,7 +8,25 @@ import { GoogleGenAI, Type } from "@google/genai";
 import type { Slider, SliderSuggestion, Modulation } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const getApiKey = (): string => {
+    const localKey = typeof window !== 'undefined' ? localStorage.getItem('GEMINI_API_KEY') : null;
+    return localKey || process.env.API_KEY || (process.env as any).GEMINI_API_KEY || '';
+};
+
+const ai = new Proxy({} as GoogleGenAI, {
+    get(target, prop) {
+        const apiKey = getApiKey();
+        if (!apiKey) {
+            throw new Error('Gemini API key is missing. Please add your personal API Key under the "System" settings tab to activate Gemini AI features.');
+        }
+        const client = new GoogleGenAI({ apiKey });
+        const value = (client as any)[prop];
+        if (typeof value === 'function') {
+            return value.bind(client);
+        }
+        return value;
+    }
+});
 const model = 'gemini-2.5-pro';
 
 // A centralized, detailed system instruction for all code-generation prompts.
